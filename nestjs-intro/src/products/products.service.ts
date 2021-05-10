@@ -18,12 +18,32 @@ export class ProductsService {
   }
 
   getProduct(productId: string) {
-    const foundProduct = this.products.find(
-      (product) => product.id === productId,
+    return { ...this.findProduct(productId).product };
+  }
+
+  updateProduct(id: string, title: string, description: string, price: number) {
+    const { product, index } = this.findProduct(id);
+    const productCopy = { ...product };
+    if (title) productCopy.title = title;
+    if (description) productCopy.description = description;
+    if (price && price > 0) productCopy.price = price;
+    this.products[index] = productCopy;
+  }
+
+  deleteProduct(id: string) {
+    const { index } = this.findProduct(id);
+    this.products.splice(index, 1);
+  }
+
+  //NOTE: any time you are return an object or array, return a copy instead of the reference to prevent unintentional changing of the original
+  private findProduct(id) {
+    const foundProductIndex = this.products.findIndex(
+      (product) => product.id === id,
     );
+    const foundProduct = this.products[foundProductIndex];
     if (!foundProduct) {
-      throw new NotFoundException(`Product ID: ${productId} not found!`);
+      throw new NotFoundException(`Product ID: ${id} not found!`);
     }
-    return { ...foundProduct };
+    return { product: foundProduct, index: foundProductIndex };
   }
 }
