@@ -16,8 +16,8 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  //@Get takes a route too but it is added on to the @Controller route above, so since this controller handles '/' (empty) the below @Get would handle GET requests to '/products'
-  @Get('products')
+  //@Get takes a route too but it is added on to the @Controller route above, so since this controller handles '/' (empty) the below @Get would handle GET requests to '/test'
+  @Get('test')
   getHello2(): string {
     return this.appService.getHello();
   }

@@ -1,5 +1,5 @@
-import { Controller, Post, Body } from "@nestjs/common"
-import { ProductsService } from "./products.service";
+import { Controller, Post, Body, Get, Param, Patch } from '@nestjs/common'
+import { ProductsService } from './products.service';
 import { Product } from './product.model';
 
 @Controller('products')
@@ -16,11 +16,38 @@ export class ProductsController {
     @Body('description') description: string,
     @Body('price') price: number,
   ) {
-    const uniqueID = new Date().toISOString();
+    const uniqueID = Math.random().toString();
     const newProduct = new Product(uniqueID, title, description, price);
     this.productsService.insertProduct(newProduct);
 
-    //APIs generally return JSON data, so return {id} to tell nestJS to set header type to application/json; nestJS also sets header type to application/json if you return a list 
+    //APIs generally return JSON data, so return {id} to tell nestJS to set header type to application/json; nestJS also sets header type to application/json if you return a list
     return { id: newProduct.id };
+  }
+
+  @Get()
+  getProducts() {
+    console.log('get------------------------------------------------');
+    return this.productsService.getProducts();
+  }
+
+  // GET '/products/:id'
+  @Get(':id')
+  getProduct(
+    //getting all params as one obj
+    //@Param() allParams: {id: string, ... }
+    @Param('id') id: string,
+  ) {
+    return this.productsService.getProduct(id);
+  }
+
+  //PATCH 'products/:id'
+  @Patch(':id')
+  updateProduct(
+    @Param('id') id: string,
+    @Body('title') title: string,
+    @Body('description') description: string,
+    @Body('price') price: number,
+  ) {
+    
   }
 }
