@@ -29,13 +29,15 @@ export class ProductsController {
     @Body('description') description: string,
     @Body('price') price: number,
   ) {
-    return await this.productsService.insertProduct(title, description, price);
+    return {
+      id: await this.productsService.insertProduct(title, description, price),
+    };
   }
 
   @Get()
-  getProducts() {
+  async getProducts() {
     console.log('get------------------------------------------------');
-    return this.productsService.getProducts();
+    return await this.productsService.getProducts();
   }
 
   // GET '/products/:id'
