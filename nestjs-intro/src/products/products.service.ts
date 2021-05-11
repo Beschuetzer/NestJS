@@ -1,13 +1,39 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from './product.model';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class ProductsService {
   private products: Product[] = [];
 
-  insertProduct(product: Product) {
-    this.products.push(product);
-    return product.id;
+  //Injecting the Mongoose Product model for use in ProductsService;  access via 'this.modelName' or 'this.productModel' for below example:
+  constructor(
+    @InjectModel('Product') private readonly productModel: Model<Product>,
+  ) {}
+
+  async insertProduct(title: string, description: string, price: number) {
+    //projectModel is a constructor function (used like creating a class with 'new')
+
+    //NOTE: One was to use the productModel
+    const newProduct = new this.productModel({
+      title,
+      description,
+      price,
+    });
+    await newProduct.save();
+
+    const newProduct2 = this.productModel.create({
+      title: 'this was created separately',
+      description,
+      price,
+    });
+
+    const result = (await newProduct2).save();
+    console.log(result);
+
+    //APIs generally return JSON data, so return {id} to tell nestJS to set header type to application/json; nestJS also sets header type to application/json if you return a list
+    return { id: newProduct.id };
   }
 
   getProducts() {
