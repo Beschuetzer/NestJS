@@ -52,7 +52,7 @@ export class ProductsController {
 
   //PATCH 'products/:id'
   @Patch(':id')
-  updateProduct(
+  async updateProduct(
     @Param('id') id: string,
     // @Body()
     // body: {
@@ -64,14 +64,18 @@ export class ProductsController {
     @Body('description') description: string,
     @Body('price') price: number,
   ) {
-    console.log('title =', title);
-    this.productsService.updateProduct(id, title, description, price);
-    return { message: 'Update Successful!' };
+    const message = await this.productsService.updateProduct(
+      id,
+      title,
+      description,
+      price,
+    );
+    return message;
   }
 
   @Delete(':id')
-  deleteProduct(@Param('id') id: string) {
-    this.productsService.deleteProduct(id);
+  async deleteProduct(@Param('id') id: string) {
+    await this.productsService.deleteProduct(id);
     return { message: `Deletion of product with id of ${id} successful!` };
   }
 }

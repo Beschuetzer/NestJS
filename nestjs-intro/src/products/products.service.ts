@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from './product.model';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Mongoose } from 'mongoose';
 
 @Injectable()
 export class ProductsService {
@@ -48,16 +48,25 @@ export class ProductsService {
   }
 
   async getProduct(productId: string) {
-    return await this.findProduct(productId);
+    return this.getProductModelFromMongoDBResponse([
+      await this.findProduct(productId),
+    ])[0];
   }
 
-  updateProduct(id: string, title: string, description: string, price: number) {
-    // const { product, index } = this.findProduct(id);
-    // const productCopy = { ...product };
-    // if (title) productCopy.title = title;
-    // if (description) productCopy.description = description;
-    // if (price && price > 0) productCopy.price = price;
-    // this.products[index] = productCopy;
+  async updateProduct(
+    id: string,
+    title: string,
+    description: string,
+    price: number,
+  ) {
+    const updatedProduct = await this.findProduct(id);
+    if (title) updatedProduct.title = title;
+    if (description) updatedProduct.description = description;
+    if (price && price > 0) updatedProduct.price = price;
+    updatedProduct.save();
+    let message = 'Update Successful!';
+    if (!updatedProduct) message = 'Update UNSUCCESSFUL!';
+    return { message };
   }
 
   deleteProduct(id: string) {
@@ -66,12 +75,22 @@ export class ProductsService {
   }
 
   //NOTE: any time you are return an object or array, return a copy instead of the reference to prevent unintentional changing of the original
-  private async findProduct(id) {
-    const foundProduct = await this.productModel.findById(id);
-    if (!foundProduct) {
-      throw new NotFoundException(`Product ID: ${id} not found!`);
+  private async findProduct(id): Promise<Product> {
+    const errorToThrow = new NotFoundException(`Product ID: ${id} not found!`);
+    let foundProduct;
+
+    //NOTE: MongoDB has requirements for valid ids, so there are two possiblilities:
+    //  1. Valid ID but not in DB (handled by !foundProduct logic)
+    //  2. Invalid ID format (also not in DB);  this case throws a different exception which the try/catch handles
+    try {
+      foundProduct = await this.productModel.findById(id);
+    } catch (err) {
+      throw errorToThrow;
     }
-    return this.getProductModelFromMongoDBResponse([foundProduct])[0];
+    if (!foundProduct) {
+      throw errorToThrow;
+    }
+    return foundProduct;
   }
 
   private getProductModelFromMongoDBResponse(products: Product[]) {
