@@ -69,14 +69,22 @@ export class ProductsService {
     return { message };
   }
 
-  deleteProduct(id: string) {
-    // const { index } = this.findProduct(id);
-    // this.products.splice(index, 1);
+  async deleteProduct(id: string) {
+    let message = `Deletion of product with id of ${id} successful!`;
+    try {
+      const deleted = await this.productModel.deleteOne({ _id: id });
+      if (deleted.deletedCount === 0) {
+        this.throwError(id);
+      }
+    } catch (err) {
+      console.log('err =', err);
+      message = 'Deletion Error';
+    }
+    return message;
   }
 
   //NOTE: any time you are return an object or array, return a copy instead of the reference to prevent unintentional changing of the original
   private async findProduct(id): Promise<Product> {
-    const errorToThrow = new NotFoundException(`Product ID: ${id} not found!`);
     let foundProduct;
 
     //NOTE: MongoDB has requirements for valid ids, so there are two possiblilities:
@@ -85,12 +93,16 @@ export class ProductsService {
     try {
       foundProduct = await this.productModel.findById(id);
     } catch (err) {
-      throw errorToThrow;
+      throw this.throwError(id);
     }
     if (!foundProduct) {
-      throw errorToThrow;
+      throw this.throwError(id);
     }
     return foundProduct;
+  }
+
+  private throwError(id = '') {
+    return new NotFoundException(`Product ID: ${id} not found!`);
   }
 
   private getProductModelFromMongoDBResponse(products: Product[]) {
