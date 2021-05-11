@@ -47,34 +47,31 @@ export class ProductsService {
     return this.getProductModelFromMongoDBResponse(products);
   }
 
-  getProduct(productId: string) {
-    return { ...this.findProduct(productId).product };
+  async getProduct(productId: string) {
+    return await this.findProduct(productId);
   }
 
   updateProduct(id: string, title: string, description: string, price: number) {
-    const { product, index } = this.findProduct(id);
-    const productCopy = { ...product };
-    if (title) productCopy.title = title;
-    if (description) productCopy.description = description;
-    if (price && price > 0) productCopy.price = price;
-    this.products[index] = productCopy;
+    // const { product, index } = this.findProduct(id);
+    // const productCopy = { ...product };
+    // if (title) productCopy.title = title;
+    // if (description) productCopy.description = description;
+    // if (price && price > 0) productCopy.price = price;
+    // this.products[index] = productCopy;
   }
 
   deleteProduct(id: string) {
-    const { index } = this.findProduct(id);
-    this.products.splice(index, 1);
+    // const { index } = this.findProduct(id);
+    // this.products.splice(index, 1);
   }
 
   //NOTE: any time you are return an object or array, return a copy instead of the reference to prevent unintentional changing of the original
-  private findProduct(id) {
-    const foundProductIndex = this.products.findIndex(
-      (product) => product.id === id,
-    );
-    const foundProduct = this.products[foundProductIndex];
+  private async findProduct(id) {
+    const foundProduct = await this.productModel.findById(id);
     if (!foundProduct) {
       throw new NotFoundException(`Product ID: ${id} not found!`);
     }
-    return { product: foundProduct, index: foundProductIndex };
+    return this.getProductModelFromMongoDBResponse([foundProduct])[0];
   }
 
   private getProductModelFromMongoDBResponse(products: Product[]) {

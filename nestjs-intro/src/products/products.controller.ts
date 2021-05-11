@@ -42,12 +42,12 @@ export class ProductsController {
 
   // GET '/products/:id'
   @Get(':id')
-  getProduct(
+  async getProduct(
     //getting all params as one obj
     //@Param() allParams: {id: string, ... }
     @Param('id') id: string,
   ) {
-    return this.productsService.getProduct(id);
+    return await this.productsService.getProduct(id);
   }
 
   //PATCH 'products/:id'
